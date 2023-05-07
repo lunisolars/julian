@@ -1,5 +1,5 @@
 import { DateDict, JDConfig, GreUnit } from '../../typings/types'
-import { int2, gre2jdn, prettyUnit, parseDateString } from '../utils/func'
+import { int2, gre2jdn, prettyUnit, parseDateString } from '../utils'
 import { GRE_UNITS } from '../constants'
 import { cache } from '@lunisolar/utils'
 
