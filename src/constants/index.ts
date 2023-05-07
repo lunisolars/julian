@@ -1,4 +1,7 @@
-export const J2000 = 2451545 // 2000年1月1日的UT12:00是儒略日2451545
+/**
+ * 2000-01-01 UT12:00 is Julian Day 2451545
+ */
+export const J2000 = 2451545
 
 export const GRE_UNITS = {
   ms: 'millisecond',
