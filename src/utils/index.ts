@@ -159,3 +159,12 @@ export const parseDateString = (str: string): DateDict => {
   }
   return res
 }
+
+export const setReadonly = <T extends Object>(obj: T): T => {
+  for (const key in obj) {
+    Object.defineProperty(obj, key, {
+      writable: false
+    })
+  }
+  return obj
+}
