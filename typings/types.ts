@@ -13,13 +13,6 @@ export type JDConfig = {
   offset: number
 }
 
-export type LunarMonth = {
-  isLeap: boolean
-  len: number
-  month: number
-  dayJdn: number
-}
-
 export type GreUnitFullName =
   | 'millisecond'
   | 'second'
@@ -28,9 +21,8 @@ export type GreUnitFullName =
   | 'day'
   | 'week'
   | 'month'
-  | 'quarter'
   | 'year'
 
-export type GreUnitShortName = 'ms' | 's' | 'm' | 'h' | 'd' | 'w' | 'M' | 'q' | 'y'
+export type GreUnitShortName = 'ms' | 's' | 'm' | 'h' | 'd' | 'w' | 'M' | 'y'
 
 export type GreUnit = GreUnitFullName | GreUnitShortName
