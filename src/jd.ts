@@ -1,6 +1,6 @@
-import { DateDict, JDConfig, GreUnit } from '../../typings/types'
-import { int2, gre2jdn, prettyUnit, parseDateString } from '../utils'
-import { GRE_UNITS } from '../constants'
+import { DateDict, JDConfig, GreUnit } from '../typings/types'
+import { int2, gre2jdn, jdn2gre, prettyUnit, parseDateString } from './utils'
+import { GRE_UNITS } from './constants'
 import { cache } from '@lunisolar/utils'
 
 export class JD {
@@ -8,10 +8,20 @@ export class JD {
   readonly config: JDConfig
   readonly timezoneOffset: number
   readonly cache = new Map<string, any>()
-  constructor(jdn: number, config?: Partial<JDConfig>) {
+  constructor(
+    jdnOrDateDict?: number | Date | Partial<DateDict> | string,
+    config?: Partial<JDConfig>
+  ) {
     const defaultConfig = {
       isUTC: false,
       offset: 0
+    }
+    let jdn
+    if (typeof jdnOrDateDict !== 'number') {
+      if (typeof jdnOrDateDict === 'string') jdnOrDateDict = parseDateString(jdnOrDateDict)
+      jdn = JD.gre2jdn(jdnOrDateDict, config?.isUTC)
+    } else {
+      jdn = jdnOrDateDict
     }
     this.config = Object.assign({}, defaultConfig, config)
     this.jdn = jdn
@@ -19,10 +29,12 @@ export class JD {
   }
 
   /**
+   * Gregorian calendar to Julian Day Number
    * 公历转儒略日数
-   * @param date 公历
+   *
+   * @param date  Gregorian calendar date 公历
    * @param isUTC is UTC?
-   * @returns 儒略日数
+   * @returns Julian Day Number
    */
   static gre2jdn(date?: Date | Partial<DateDict> | string, isUTC = false) {
     if (typeof date === 'string') date = parseDateString(date)
@@ -30,14 +42,24 @@ export class JD {
   }
 
   /**
-   * 通过公历创建儒略日对象
-   * @param dateDict 公历日期字典对象
-   * @param config 设置，主要是isUTC
-   * @returns JD实例
+   * Create JD object from the Gregorian calendar
+   *
+   * @param dateDict Gregorian calendar date
+   * @param config config
+   * @returns JD Instance
    */
   static fromGre(dateDict?: Partial<DateDict> | string, config?: Partial<JDConfig>) {
-    if (typeof dateDict === 'string') dateDict = parseDateString(dateDict)
-    const jdn = JD.gre2jdn(dateDict, config?.isUTC)
+    return new JD(dateDict, config)
+  }
+
+  /**
+   * Create JD object from the Julian Day Number
+   *
+   * @param jdn Julian Day Number
+   * @param config config
+   * @returns JD Instance
+   */
+  static fromJdn(jdn: number, config?: Partial<JDConfig>): JD {
     return new JD(jdn, config)
   }
 
@@ -47,52 +69,7 @@ export class JD {
    * @returns DateDict
    */
   static jdn2gre(jdn: number, isUTC = false): Required<DateDict> {
-    if (!isUTC) {
-      const timezoneOffset = -new Date().getTimezoneOffset()
-      jdn += timezoneOffset / (24 * 60)
-    }
-    //儒略日数转公历
-    const r: Required<DateDict> = {
-      year: 0,
-      month: 0,
-      day: 0,
-      hour: 0,
-      minute: 0,
-      second: 0,
-      millis: 0
-    }
-    let D = int2(jdn + 0.5),
-      F = jdn + 0.5 - D,
-      c //取得日数的整数部份A及小数部分F
-    if (D >= 2299161) {
-      c = int2((D - 1867216.25) / 36524.25)
-      D += 1 + c - int2(c / 4)
-    }
-    D += 1524
-    r.year = int2((D - 122.1) / 365.25) //年数
-    D -= int2(365.25 * r.year)
-    r.month = int2(D / 30.601) //月数
-    D -= int2(30.601 * r.month)
-    r.day = D //日数
-    if (r.month > 13) {
-      r.month -= 13
-      r.year -= 4715
-    } else {
-      r.month -= 1
-      r.year -= 4716
-    }
-    //日的小数转为时分秒
-    F *= 24
-    r.hour = int2(F)
-    F -= r.hour
-    F *= 60
-    r.minute = int2(F)
-    F -= r.minute
-    F *= 60
-    r.second = int2(F)
-    F -= r.second
-    r.millis = F * 1000
-    return r
+    return jdn2gre(jdn, isUTC)
   }
 
   @cache('jd:toGre')

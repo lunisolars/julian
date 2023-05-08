@@ -1,4 +1,4 @@
-import { JD } from '../../src/class/jd'
+import { JD } from '../src/jd'
 
 // import { JD as JDX } from '../../src/utils/jd'
 
@@ -20,9 +20,23 @@ describe('test JD Class', () => {
 
   it('test JD parse and fromat 2023-05-06 00:00:00', () => {
     const jd = JD.fromGre('2023-05-06 00:00:00')
+    const gre = jd.toGre()
+    console.log('gre', gre)
     expect(jd.format(`YYYY-MM-DD HH:mm:ss`)).toBe('2023-05-06 00:00:00')
     expect(jd.jdn).toBe(JD.fromGre({ year: 2023, month: 5, day: 6 }).jdn)
     expect(jd.jdn).toBe(JD.fromGre({ year: 2023, month: 5, day: 6 }).jdn)
+    expect(JD.fromGre('2023-06-06 00:00:00').jdn).toBe(2460101.1666666665)
+    expect(JD.fromJdn(2460101, { isUTC: true }).format('YYYY-MM-DD HH:mm:ss')).toBe(
+      '2023-06-05 12:00:00'
+    )
+  })
+
+  it('test JD toGre 2023-05-06 00:00:00', () => {
+    const jd = JD.fromJdn(2460101)
+    const gre = jd.toGre()
+    console.log('gre', gre)
+    expect(gre.year).toBe(2023)
+    expect(gre.month).toBe(6)
   })
 
   it('test JD add', () => {
@@ -42,7 +56,5 @@ describe('test JD Class', () => {
     ).toBe(2460101.1666666665)
     expect(jd.add(1, 'month').format()).toBe('2023-06-06 00:00:00')
     expect(jd.add(1, 'year').format()).toBe('2024-05-06 00:00:00')
-    expect(JD.fromGre('2023-06-06 00:00:00').jdn).toBe(2460101.1666666665)
-    // expect(new JD(2460102.1666550925).format()).toBe('2023-06-06 00:00:00')
   })
 })
