@@ -1,5 +1,5 @@
 import { DateDict, JDConfig, GreUnit } from '../typings/types'
-import { int2, gre2jdn, jdn2gre, prettyUnit, parseDateString } from './utils'
+import { int2, gre2jdn, jdn2gre, prettyUnit, parseDateString, setReadonly } from './utils'
 import { GRE_UNITS } from './constants'
 import { cache } from '@lunisolar/utils'
 
@@ -23,7 +23,7 @@ export class JD {
     } else {
       jdn = jdnOrDateDict
     }
-    this.config = Object.assign({}, defaultConfig, config)
+    this.config = setReadonly(Object.assign({}, defaultConfig, config))
     this.jdn = jdn
     this.timezoneOffset = this.config.isUTC ? 0 : new Date().getTimezoneOffset()
   }
@@ -82,6 +82,24 @@ export class JD {
 
   clone(): JD {
     return new JD(this.jdn, this.config)
+  }
+
+  local(): JD {
+    const config = Object.assign({}, this.config, {
+      isUTC: false
+    })
+    return new JD(this.jdn, config)
+  }
+
+  utc(): JD {
+    const config = Object.assign({}, this.config, {
+      isUTC: true
+    })
+    return new JD(this.jdn, config)
+  }
+
+  isUTC() {
+    return this.config.isUTC
   }
 
   get year() {
