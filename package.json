@@ -4,7 +4,7 @@
   "description": "Junlian Day convertor, 儒略日数转换工具",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
-  "types": "typings/index.d.ts",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "rollup -c --configPlugin typescript",
     "lint": "eslint --fix --ext .js,.ts src/ typings/ __tests__/",
@@ -14,7 +14,7 @@
   "keywords": [],
   "repository": {
     "type": "git",
-    "url": "git@github.com:lunisolar-js/sx.git"
+    "url": "git@github.com:lunisolars/julian.git"
   },
   "license": "MIT",
   "devDependencies": {

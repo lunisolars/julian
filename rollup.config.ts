@@ -6,27 +6,14 @@ import dts from 'rollup-plugin-dts'
 import peerDepsExternal from 'rollup-plugin-peer-deps-external'
 import filesize from 'rollup-plugin-filesize'
 import { nodeResolve } from '@rollup/plugin-node-resolve'
-import path from 'path'
 import fs from 'fs'
 
 const pkg = JSON.parse(fs.readFileSync('./package.json', { encoding: 'utf8' }))
 
-const upCaseFirst = (str: string) => (str[0] ? str[0].toUpperCase() + str.slice(1) : '')
-const formatName = (n: string) => {
-  return n
-    .trim()
-    .replace(/\.(js|ts)$/, '')
-    .split('-')
-    .map((v, i) => (i === 0 ? v.trim() : upCaseFirst(v.trim())))
-    .join('')
-}
-const formatGlobalName = (name: string) =>
-  formatName(name)
-    .trim()
-    .replace(/^\d|[^a-z\A-Z\d]+/g, '_')
+// const upCaseFirst = (str: string) => (str[0] ? str[0].toUpperCase() + str.slice(1) : '')
 
 const input = 'src/index.ts'
-const pluginGlobelName = formatGlobalName(pkg.name)
+const pluginGlobelName = 'julian'
 const rollupConfig = [
   defineConfig({
     input,
@@ -57,42 +44,17 @@ const rollupConfig = [
       terser(),
       filesize()
     ]
+  }),
+  defineConfig({
+    input,
+    output: [
+      {
+        format: 'es',
+        file: pkg.types
+      }
+    ],
+    plugins: [dts()]
   })
 ]
-
-// packing locales
-;(() => {
-  const dirPath = path.join(path.resolve('./src'), 'locale')
-  const outputDir = path.resolve('./locale')
-  if (!fs.existsSync(dirPath)) return
-  const dirNames = fs.readdirSync(dirPath)
-  // if (dirName)
-  for (const dirName of dirNames) {
-    const input = path.join(dirPath, dirName)
-    const fileName = /\.(js|ts)$/.test(dirName) ? dirName.slice(0, -3) : dirName
-    const stat = fs.statSync(input)
-    if (!stat.isDirectory()) {
-      rollupConfig.push(
-        defineConfig({
-          input,
-          output: {
-            name: `${pluginGlobelName}_locale_${formatName(fileName)}`,
-            file: path.join(outputDir, `${fileName}.js`),
-            format: 'umd'
-          },
-          plugins: [ts(), terser()]
-        }),
-        defineConfig({
-          input,
-          output: {
-            file: path.join(outputDir, `${fileName}.d.ts`),
-            format: 'es'
-          },
-          plugins: [dts()]
-        })
-      )
-    }
-  }
-})()
 
 export default rollupConfig
