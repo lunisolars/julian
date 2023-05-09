@@ -1,7 +1,7 @@
 {
   "name": "@lunisolar/julian",
   "version": "0.1.0",
-  "description": "Junlian Day convertor, 儒略日数转换工具",
+  "description": "This is a tool for converting Julian Day Number and Gregorian calendar. 儒略日数和公历之间的转换工具",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
@@ -11,7 +11,7 @@
     "test": "jest",
     "changelog": "conventional-changelog -p angular  -i CHANGELOG.md -s "
   },
-  "keywords": [],
+  "keywords": ["julian", "Julian Day Number", "convertor", "jdn", "Gregorian calendar", "儒略日", "格里历", "公历"],
   "repository": {
     "type": "git",
     "url": "git@github.com:lunisolars/julian.git"
