@@ -32,7 +32,6 @@ describe('test JD Class', () => {
   it('test JD toGre 2023-05-06 00:00:00', () => {
     const jd = JD.fromJdn(2460101)
     const gre = jd.toGre()
-    console.log('gre 2460101', gre)
     expect(gre.year).toBe(2023)
     expect(gre.month).toBe(6)
   })
@@ -54,6 +53,7 @@ describe('test JD Class', () => {
     ).toBe(2460101.1666666665)
     expect(jd.add(1, 'month').format()).toBe('2023-06-06 00:00:00')
     expect(jd.add(1, 'year').format()).toBe('2024-05-06 00:00:00')
+    expect(JD.fromGre('2023-12-01').add(1, 'month').format()).toBe('2024-01-01 00:00:00')
   })
 
   it('test JD utc local', () => {
