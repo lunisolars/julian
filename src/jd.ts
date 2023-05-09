@@ -3,6 +3,14 @@ import { int2, gre2jdn, jdn2gre, prettyUnit, parseDateString, setReadonly } from
 import { GRE_UNITS } from './constants'
 import { cache } from '@lunisolar/utils'
 
+function changeIsUTC(inst: JD, isUTC: boolean) {
+  const config = Object.assign({}, inst.config, {
+    isUTC,
+    offset: 0
+  })
+  return new JD(inst.jdn + inst.config.offset / (24 * 60), config)
+}
+
 export class JD {
   readonly jdn: number
   readonly config: JDConfig
@@ -64,8 +72,10 @@ export class JD {
   }
 
   /**
+   * Julian Day Number to Gregorian calendar
    * 儒略日数转公历
-   * @param jdn 儒略日数
+   * @param jdn Julian Day Number 儒略日数
+   * @param isUTC is UTC? defalut `false`
    * @returns DateDict
    */
   static jdn2gre(jdn: number, isUTC = false): Required<DateDict> {
@@ -85,17 +95,11 @@ export class JD {
   }
 
   local(): JD {
-    const config = Object.assign({}, this.config, {
-      isUTC: false
-    })
-    return new JD(this.jdn, config)
+    return changeIsUTC(this, false)
   }
 
   utc(): JD {
-    const config = Object.assign({}, this.config, {
-      isUTC: true
-    })
-    return new JD(this.jdn, config)
+    return changeIsUTC(this, true)
   }
 
   isUTC() {
@@ -205,7 +209,9 @@ export class JD {
       mm: String(m).padStart(2, '0'),
       s: String(s),
       ss: String(s).padStart(2, '0'),
-      SSS: String(this.millis).padStart(3, '0'),
+      S: String(Math.floor(this.millis / 100)),
+      SS: String(Math.floor(this.millis / 10)).padStart(2, '0'),
+      SSS: String(Math.floor(this.millis)).padStart(3, '0'),
       Z: tz,
       ZZ: tz.replace(':', '')
     }
