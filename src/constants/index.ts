@@ -3,6 +3,11 @@
  */
 export const J2000 = 2451545
 
+/**
+ * 一天的总毫秒数
+ */
+export const DAY_MS = 24 * 60 * 60 * 1000
+
 export const GRE_UNITS = {
   ms: 'millisecond',
   s: 'second',
