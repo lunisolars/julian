@@ -1,9 +1,35 @@
-import { GRE_UNITS, REGEX_PARSE } from '../constants'
+import { GRE_UNITS, REGEX_PARSE, DAY_MS } from '../constants'
 import { DateDict, GreUnit, GreUnitFullName } from '../../typings/types'
 
 //==================================================================================
 export function int2(v: number) {
   return Math.floor(v)
+}
+
+export function dateDict2jdms(d: DateDict): number {
+  const ms = d.millis ?? 0
+  return d.hour * 60 * 60 * 1000 + d.minute * 60 * 1000 + d.second * 1000 + ms
+}
+
+export function jdms2hms(
+  jdms: number
+): Pick<Required<DateDict>, 'hour' | 'minute' | 'second' | 'millis'> {
+  const hour = int2(jdms / (60 * 60 * 1000))
+  let f = jdms - hour * 60 * 60 * 1000
+  const minute = int2(f / (60 * 1000))
+  f -= minute * (60 * 1000)
+  const second = int2(f / 1000)
+  f -= second
+  return {
+    hour,
+    minute,
+    second,
+    millis: f
+  }
+}
+
+export function jdmsAfterAdd(jdms: number, addValue: number): number {
+  return (DAY_MS + jdms + addValue) % DAY_MS
 }
 
 export function date2DateDict(date?: Date | Partial<DateDict> | number): DateDict {
@@ -73,10 +99,13 @@ export function gre2jdn(date?: Date | Partial<DateDict>, isUTC = false): number 
  * @param isUTC is UTC
  * @returns  Gregorian calendar date dict
  */
-export function jdn2gre(jdn: number, isUTC = false): Required<DateDict> {
+export function jdn2gre(jdn: number, isUTC = false, jdms?: number): Required<DateDict> {
   if (!isUTC) {
     const timezoneOffset = -new Date().getTimezoneOffset()
     jdn += timezoneOffset / (24 * 60)
+    if (jdms && jdms > 0) {
+      jdms = jdmsAfterAdd(jdms, timezoneOffset * 60 * 1000)
+    }
   }
   //儒略日数转公历
   const r: Required<DateDict> = {
@@ -108,17 +137,31 @@ export function jdn2gre(jdn: number, isUTC = false): Required<DateDict> {
     r.month -= 1
     r.year -= 4716
   }
-  //日的小数转为时分秒
-  F *= 24
-  r.hour = int2(F)
-  F -= r.hour
-  F *= 60
-  r.minute = int2(F)
-  F -= r.minute
-  F *= 60
-  r.second = int2(F)
-  F -= r.second
-  r.millis = F * 1000
+  if (jdms && jdms > 0) {
+    const hms = jdms2hms(jdms)
+    r.hour = hms.hour
+    r.minute = hms.minute
+    r.second = hms.second
+    r.millis = hms.millis
+  } else {
+    //日的小数转为时分秒
+    F *= 24
+    r.hour = int2(F)
+    F -= r.hour
+    F *= 60
+    r.minute = int2(F)
+    F -= r.minute
+    F *= 60
+    r.second = Math.round(F)
+    if (r.second > 59) {
+      r.second -= 60
+      r.minute++
+    }
+    if (r.minute > 59) {
+      r.minute -= 60
+      r.hour++
+    }
+  }
   return r
 }
 
@@ -167,4 +210,12 @@ export const setReadonly = <T extends Object>(obj: T): T => {
     })
   }
   return obj
+}
+
+/**
+ * 取得数字的小数部分
+ */
+export function getFractionalPart(val: number) {
+  const strSplit = String(val).split('.')
+  return Number(`${strSplit[0]}.${strSplit[1] ?? 0}`)
 }

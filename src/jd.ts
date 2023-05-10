@@ -1,5 +1,15 @@
 import { DateDict, JDConfig, GreUnit } from '../typings/types'
-import { int2, gre2jdn, jdn2gre, prettyUnit, parseDateString, setReadonly } from './utils'
+import {
+  int2,
+  gre2jdn,
+  jdn2gre,
+  prettyUnit,
+  parseDateString,
+  setReadonly,
+  dateDict2jdms,
+  date2DateDict,
+  jdmsAfterAdd
+} from './utils'
 import { GRE_UNITS } from './constants'
 import { cache } from '@lunisolar/utils'
 
@@ -8,30 +18,32 @@ function changeIsUTC(inst: JD, isUTC: boolean) {
     isUTC,
     offset: 0
   })
-  return new JD(inst.jdn + inst.config.offset / (24 * 60), config)
+  return new JD(inst.jdn, config)
 }
 
 export class JD {
   readonly jdn: number
-  readonly config: JDConfig
+  readonly jdms: number
+  readonly config: Omit<JDConfig, 'jdms'>
   readonly timezoneOffset: number
   readonly cache = new Map<string, any>()
   constructor(
     jdnOrDateDict?: number | Date | Partial<DateDict> | string,
     config?: Partial<JDConfig>
   ) {
-    const defaultConfig = {
-      isUTC: false,
-      offset: 0
-    }
     let jdn
     if (typeof jdnOrDateDict !== 'number') {
       if (typeof jdnOrDateDict === 'string') jdnOrDateDict = parseDateString(jdnOrDateDict)
       jdn = JD.gre2jdn(jdnOrDateDict, config?.isUTC)
+      this.jdms = dateDict2jdms(date2DateDict(jdnOrDateDict))
     } else {
       jdn = jdnOrDateDict
+      this.jdms = config?.jdms ?? 0
     }
-    this.config = setReadonly(Object.assign({}, defaultConfig, config))
+    this.config = setReadonly({
+      isUTC: config?.isUTC || false,
+      offset: config?.offset || 0
+    })
     this.jdn = jdn
     this.timezoneOffset = this.config.isUTC ? 0 : new Date().getTimezoneOffset()
   }
@@ -78,15 +90,16 @@ export class JD {
    * @param isUTC is UTC? defalut `false`
    * @returns DateDict
    */
-  static jdn2gre(jdn: number, isUTC = false): Required<DateDict> {
-    return jdn2gre(jdn, isUTC)
+  static jdn2gre(jdn: number, isUTC = false, jdms?: number): Required<DateDict> {
+    return jdn2gre(jdn, isUTC, jdms)
   }
 
   @cache('jd:toGre')
   toGre(): Required<DateDict> {
     const jdn = this.jdn
-    const mOffset = this.config.offset / (24 * 60)
-    const res = JD.jdn2gre(jdn + mOffset, this.config.isUTC)
+    const dOffset = this.config.offset / (24 * 60)
+    const jdms = jdmsAfterAdd(this.jdms, this.config.offset * 60 * 1000)
+    const res = JD.jdn2gre(jdn + dOffset, this.config.isUTC, jdms)
     return res
   }
 
@@ -144,23 +157,29 @@ export class JD {
     const pUnit = prettyUnit(unit)
     let diff = value
     let jdn = this.jdn
+    let jdms = this.jdms
     if (pUnit === GRE_UNITS.h) {
       diff = value / 24
+      jdms = jdms ? jdmsAfterAdd(jdms, value * 60 * 60 * 1000) : 0
     } else if (pUnit === GRE_UNITS.m) {
       diff = value / (24 * 60)
+      jdms = jdms ? jdmsAfterAdd(jdms, value * 60 * 1000) : 0
     } else if (pUnit === GRE_UNITS.s) {
       diff = value / (24 * 60 * 60)
+      jdms = jdms ? jdmsAfterAdd(jdms, value * 1000) : 0
     } else if (unit === GRE_UNITS.M || unit === GRE_UNITS.y) {
       const gre = JD.jdn2gre(this.jdn, this.config.isUTC)
       diff = 0
       if (unit === GRE_UNITS.M) gre.month += 1
       if (unit === GRE_UNITS.y) gre.year += 1
-
       jdn = JD.gre2jdn(gre, this.config.isUTC)
     } else if (unit === GRE_UNITS.w) {
       diff = value / 7
+    } else if (unit === GRE_UNITS.ms) {
+      diff = value / (24 * 60 * 60 * 1000)
+      jdms = jdms ? jdmsAfterAdd(jdms, value) : 0
     }
-    return new JD(jdn + diff, this.config)
+    return new JD(jdn + diff, Object.assign({ jdms }, this.config))
   }
 
   format(formatStr?: string) {

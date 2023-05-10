@@ -11,6 +11,7 @@ export type DateDict = {
 export type JDConfig = {
   isUTC: boolean
   offset: number
+  jdms: number
 }
 
 export type GreUnitFullName =
