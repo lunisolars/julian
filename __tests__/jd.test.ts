@@ -47,8 +47,7 @@ describe('test JD Class', () => {
         day: 6,
         hour: 0,
         minute: 0,
-        second: 0,
-        millis: 0
+        second: 0
       }).jdn
     ).toBe(2460101.1666666665)
     expect(jd.add(1, 'month').format()).toBe('2023-06-06 00:00:00')
@@ -63,5 +62,13 @@ describe('test JD Class', () => {
     expect(jd.format('YYYY-MM-DD HH:mm:ss')).toBe('2023-06-05 20:00:00')
     expect(jd2.format('YYYY-MM-DD HH:mm:ss')).toBe('2023-06-05 12:00:00')
     expect(jd3.format('YYYY-MM-DD HH:mm:ss')).toBe('2023-06-05 20:00:00')
+    expect(JD.fromGre('2023-05-10 00:00:00').utc().format('YYYY-MM-DD HH:mm:ss')).toBe(
+      '2023-05-09 16:00:00'
+    )
+  })
+
+  it('test JD utc local 2', () => {
+    const jd = new JD('2023-05-10', { isUTC: true, offset: 420 }).local()
+    expect(jd.format('YYYY-MM-DD HH:mm:ss')).toBe('2023-05-10 08:00:00')
   })
 })
