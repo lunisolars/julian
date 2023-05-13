@@ -118,7 +118,7 @@ type DateDict = {
   hour: number
   minute: number
   second: number
-  millis?: number
+  millisecond?: number
 }
 
 type JDConfig = {
@@ -185,7 +185,7 @@ type DateDict = {
   hour: number
   minute: number
   second: number
-  millis?: number
+  millisecond?: number
 }
 ```
 
@@ -220,7 +220,7 @@ type DateDict = {
   hour: number
   minute: number
   second: number
-  millis?: number
+  millisecond?: number
 }
 ```
 
@@ -299,7 +299,7 @@ const jd = JD.fromGre('2023-05-09', { isUTC: true })
 console.log(jd.isUTC()) // true
 ```
 
-### year, month, day, hour, minute, second, millis
+### year, month, day, hour, minute, second, millisecond
 
 get year, month, day, hour, minute, second or millisecond
 
@@ -314,7 +314,7 @@ console.log(jd.day) // 5
 console.log(jd.hour) // 12
 console.log(jd.minute) // 0
 console.log(jd.second) // 0
-console.log(jd.millis) // 0 (Due to the precision of decimal calculations, the calculation of milliseconds is only an approximation )
+console.log(jd.millisecond) // 0 (Due to the precision of decimal calculations, the calculation of milliseconds is only an approximation )
 console.log(jd.dayOfWeek) // 1
 ```
 

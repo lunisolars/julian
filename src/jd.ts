@@ -1,17 +1,17 @@
 import { DateDict, JDConfig, GreUnit } from '../typings/types'
+import { GRE_UNITS } from './constants'
 import {
-  int2,
+  toInt,
+  cache,
+  prettyUnit,
+  string2DateDict,
+  setReadonly,
   gre2jdn,
   jdn2gre,
-  prettyUnit,
-  parseDateString,
-  setReadonly,
   dateDict2jdms,
   date2DateDict,
-  jdmsAfterAdd
-} from './utils'
-import { GRE_UNITS } from './constants'
-import { cache } from '@lunisolar/utils'
+  modDayMs
+} from '@lunisolar/utils'
 
 function changeIsUTC(inst: JD, isUTC: boolean) {
   const config = Object.assign({}, inst.config, {
@@ -33,7 +33,7 @@ export class JD {
   ) {
     let jdn
     if (typeof jdnOrDateDict !== 'number') {
-      if (typeof jdnOrDateDict === 'string') jdnOrDateDict = parseDateString(jdnOrDateDict)
+      if (typeof jdnOrDateDict === 'string') jdnOrDateDict = string2DateDict(jdnOrDateDict)
       jdn = JD.gre2jdn(jdnOrDateDict, config?.isUTC)
       this.jdms = dateDict2jdms(date2DateDict(jdnOrDateDict))
     } else {
@@ -57,7 +57,7 @@ export class JD {
    * @returns Julian Day Number
    */
   static gre2jdn(date?: Date | Partial<DateDict> | string, isUTC = false) {
-    if (typeof date === 'string') date = parseDateString(date)
+    if (typeof date === 'string') date = string2DateDict(date)
     return gre2jdn(date, isUTC)
   }
 
@@ -98,7 +98,7 @@ export class JD {
   toGre(): Required<DateDict> {
     const jdn = this.jdn
     const dOffset = this.config.offset / (24 * 60)
-    const jdms = jdmsAfterAdd(this.jdms, this.config.offset * 60 * 1000)
+    const jdms = modDayMs(this.jdms, this.config.offset * 60 * 1000)
     const res = JD.jdn2gre(jdn + dOffset, this.config.isUTC, jdms)
     return res
   }
@@ -143,14 +143,14 @@ export class JD {
     return this.toGre().second
   }
 
-  get millis() {
-    return this.toGre().millis
+  get millisecond() {
+    return this.toGre().millisecond
   }
 
   get dayOfWeek() {
     let mOffset = this.config.isUTC ? 0 : -this.timezoneOffset / (24 * 60)
     mOffset += this.config.offset
-    return int2(this.jdn + 1.5 + 7000000 + mOffset) % 7
+    return toInt(this.jdn + 1.5 + 7000000 + mOffset) % 7
   }
 
   add(value: number, unit: GreUnit) {
@@ -160,13 +160,13 @@ export class JD {
     let jdms = this.jdms
     if (pUnit === GRE_UNITS.h) {
       diff = value / 24
-      jdms = jdms ? jdmsAfterAdd(jdms, value * 60 * 60 * 1000) : 0
+      jdms = jdms ? modDayMs(jdms, value * 60 * 60 * 1000) : 0
     } else if (pUnit === GRE_UNITS.m) {
       diff = value / (24 * 60)
-      jdms = jdms ? jdmsAfterAdd(jdms, value * 60 * 1000) : 0
+      jdms = jdms ? modDayMs(jdms, value * 60 * 1000) : 0
     } else if (pUnit === GRE_UNITS.s) {
       diff = value / (24 * 60 * 60)
-      jdms = jdms ? jdmsAfterAdd(jdms, value * 1000) : 0
+      jdms = jdms ? modDayMs(jdms, value * 1000) : 0
     } else if (unit === GRE_UNITS.M || unit === GRE_UNITS.y) {
       const gre = JD.jdn2gre(this.jdn, this.config.isUTC)
       diff = 0
@@ -177,7 +177,7 @@ export class JD {
       diff = value / 7
     } else if (unit === GRE_UNITS.ms) {
       diff = value / (24 * 60 * 60 * 1000)
-      jdms = jdms ? jdmsAfterAdd(jdms, value) : 0
+      jdms = jdms ? modDayMs(jdms, value) : 0
     }
     return new JD(jdn + diff, Object.assign({ jdms }, this.config))
   }
@@ -228,9 +228,9 @@ export class JD {
       mm: String(m).padStart(2, '0'),
       s: String(s),
       ss: String(s).padStart(2, '0'),
-      S: String(Math.floor(this.millis / 100)),
-      SS: String(Math.floor(this.millis / 10)).padStart(2, '0'),
-      SSS: String(Math.floor(this.millis)).padStart(3, '0'),
+      S: String(Math.floor(this.millisecond / 100)),
+      SS: String(Math.floor(this.millisecond / 10)).padStart(2, '0'),
+      SSS: String(Math.floor(this.millisecond)).padStart(3, '0'),
       Z: tz,
       ZZ: tz.replace(':', '')
     }

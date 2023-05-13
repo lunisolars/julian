@@ -5,7 +5,7 @@ export type DateDict = {
   hour: number
   minute: number
   second: number
-  millis?: number
+  millisecond?: number
 }
 
 export type JDConfig = {
