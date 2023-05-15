@@ -1,11 +1,10 @@
 import { JD } from '../src/jd'
 
-// import { JD as JDX } from '../../src/utils/jd'
-
 describe('test JD Class', () => {
   it('test JD 2023-04-14 12:00:00', () => {
     const jd = JD.fromGre({ year: 2023, month: 4, day: 14, hour: 12 }, { isUTC: true })
     expect(jd.jdn).toBe(2460049)
+    expect(jd.jdms).toBe(43200000)
     expect(jd.format(`YYYY-MM-DD HH:mm:ss`)).toBe('2023-04-14 12:00:00')
   })
 
@@ -38,7 +37,6 @@ describe('test JD Class', () => {
 
   it('test JD add', () => {
     const jd = JD.fromGre({ year: 2023, month: 5, day: 6, hour: 0 }, { isUTC: true })
-    // const jd2 = JD.fromGre({ year: 2023, month: 5, day: 6, hour: 0 })
     expect(jd.add(1, 'day').format(`YYYY-MM-DD HH:mm:ss`)).toBe('2023-05-07 00:00:00')
     expect(
       JD.fromGre({
@@ -70,5 +68,30 @@ describe('test JD Class', () => {
   it('test JD utc local 2', () => {
     const jd = new JD('2023-05-10', { isUTC: true, offset: 420 }).local()
     expect(jd.format('YYYY-MM-DD HH:mm:ss')).toBe('2023-05-10 08:00:00')
+  })
+
+  it('test JD parse', () => {
+    const jd = JD.fromGre('2023-05-14 13:00')
+    expect(jd.format('YYYY-MM-DD HH:mm:ss')).toBe('2023-05-14 13:00:00')
+    expect(jd.jdn).toBe(2460078.7083333335)
+    expect(jd.timestamp).toBe(1684040400000)
+    const date = new Date(jd.timestamp)
+    expect(date.getFullYear()).toBe(2023)
+    expect(date.getMonth() + 1).toBe(5)
+    expect(date.getDate()).toBe(14)
+    expect(date.getHours()).toBe(13)
+  })
+
+  it('test JD parse utc', () => {
+    const jd = JD.fromGre('2023-05-15 16:30', { isUTC: true })
+    expect(jd.format('YYYY-MM-DD HH:mm:ss')).toBe('2023-05-15 16:30:00')
+    expect(jd.jdn).toBe(2460080.1875)
+    expect(jd.timestamp).toBe(1684168200000)
+    const date = new Date(jd.timestamp)
+    expect(date.getFullYear()).toBe(2023)
+    expect(date.getMonth() + 1).toBe(5)
+    expect(date.getDate()).toBe(16)
+    expect(date.getHours()).toBe(0)
+    expect(date.getMinutes()).toBe(30)
   })
 })
