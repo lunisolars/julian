@@ -2,7 +2,7 @@ import { DateDict, JDConfig, GreUnit } from '../typings/types'
 import { GRE_UNITS } from './constants'
 import {
   gre2jdn,
-  jdn2DateDict,
+  jdn2dateDict,
   dateDict2jdms,
   modDayMs,
   jdDict2timestamp,
@@ -92,7 +92,7 @@ export class JD {
    * @returns DateDict
    */
   static jdn2gre(jdn: number, isUTC = false, jdms?: number): Required<DateDict> {
-    return jdn2DateDict(jdn, isUTC, jdms)
+    return jdn2dateDict(jdn, isUTC, jdms)
   }
 
   @cache('jd:toGre')
