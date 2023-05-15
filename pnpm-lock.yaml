@@ -2,7 +2,7 @@ lockfileVersion: 5.4
 
 specifiers:
   '@jest/types': ^29.4.2
-  '@lunisolar/utils': ^0.5.4
+  '@lunisolar/utils': ^0.5.5
   '@rollup/plugin-node-resolve': ^15.0.1
   '@rollup/plugin-terser': ^0.4.0
   '@rollup/plugin-typescript': ^11.0.0
@@ -28,7 +28,7 @@ specifiers:
   typescript: ^4.9.5
 
 dependencies:
-  '@lunisolar/utils': 0.5.4
+  '@lunisolar/utils': 0.5.5
 
 devDependencies:
   '@jest/types': 29.5.0
@@ -761,8 +761,8 @@ packages:
       '@jridgewell/sourcemap-codec': 1.4.15
     dev: true
 
-  /@lunisolar/utils/0.5.4:
-    resolution: {integrity: sha512-JKiK0dag8mvQiSkvt7pGgvvvRzwgj+VXL1cc/ySwlw3uv/Hs7gfwtpQ2m2JZ1Kr2brwRIqIISTfWzBhFFjcCdg==}
+  /@lunisolar/utils/0.5.5:
+    resolution: {integrity: sha512-AFyrsWt6zDGqm2uQFGJ0jDZXCyz2arBRdI9/kq+Y7jZ8/BoOJnhZvkMAxDZC+QKZwjQyuaOwCt/FOkdhBh+L6A==}
     dev: false
 
   /@nodelib/fs.scandir/2.1.5:
