@@ -161,6 +161,34 @@ example:
 const jd = JD.fromJdn(2460101)
 ```
 
+### fromTimestamp()
+
+create a JD instance from **timestamp**
+
+-- static method --
+
+```typescript
+/**
+ * Create JD object from timestamp
+ *
+ * @param timestamp timestamp (unit: ms)
+ * @param config config
+ * @returns JD Instance
+  */
+JD.fromTimestamp(timestamp: number, config?: Partial<JDConfig>): JD
+
+type JDConfig = {
+  isUTC: boolean
+  offset: number
+}
+```
+
+example:
+
+```typescript
+const jd = JD.fromTimestamp(1684040400)
+```
+
 ### gre2jdn()
 
 **Gregorian calendar**  convert to **Julian Day Number** without create JD instance
