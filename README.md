@@ -318,6 +318,33 @@ console.log(jd.millisecond) // 0 (Due to the precision of decimal calculations, 
 console.log(jd.dayOfWeek) // 1
 ```
 
+### timestamp
+
+Get timestamp
+
+example:
+
+```typescript
+const jd = JD.fromGre('2023-05-15 16:30', { isUTC: true })
+
+console.log(jd.timestamp) // 1684168200000
+```
+
+### toDate()
+
+Get a new Date object instance.
+
+Note that if your year is less than 1900, it is not guaranteed to get the correct Date object.
+
+example:
+
+```typescript
+const jd = JD.fromGre('2023-05-15 16:30', { isUTC: true })
+
+const d = jd.toDate()
+console.log(d.getFullYear()) // 2023
+```
+
 ### format()
 
 format time. return string.
