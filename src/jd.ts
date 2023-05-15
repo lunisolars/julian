@@ -1,16 +1,17 @@
 import { DateDict, JDConfig, GreUnit } from '../typings/types'
 import { GRE_UNITS } from './constants'
 import {
-  toInt,
-  cache,
-  prettyUnit,
-  string2DateDict,
-  setReadonly,
   gre2jdn,
-  jdn2gre,
+  jdn2DateDict,
   dateDict2jdms,
+  modDayMs,
+  jdDict2timestamp,
+  string2DateDict,
   date2DateDict,
-  modDayMs
+  prettyUnit,
+  toInt,
+  setReadonly,
+  cache
 } from '@lunisolar/utils'
 
 function changeIsUTC(inst: JD, isUTC: boolean) {
@@ -35,7 +36,7 @@ export class JD {
     if (typeof jdnOrDateDict !== 'number') {
       if (typeof jdnOrDateDict === 'string') jdnOrDateDict = string2DateDict(jdnOrDateDict)
       jdn = JD.gre2jdn(jdnOrDateDict, config?.isUTC)
-      this.jdms = dateDict2jdms(date2DateDict(jdnOrDateDict))
+      this.jdms = dateDict2jdms(date2DateDict(jdnOrDateDict), config?.isUTC)
     } else {
       jdn = jdnOrDateDict
       this.jdms = config?.jdms ?? 0
@@ -91,7 +92,7 @@ export class JD {
    * @returns DateDict
    */
   static jdn2gre(jdn: number, isUTC = false, jdms?: number): Required<DateDict> {
-    return jdn2gre(jdn, isUTC, jdms)
+    return jdn2DateDict(jdn, isUTC, jdms)
   }
 
   @cache('jd:toGre')
@@ -151,6 +152,15 @@ export class JD {
     let mOffset = this.config.isUTC ? 0 : -this.timezoneOffset / (24 * 60)
     mOffset += this.config.offset
     return toInt(this.jdn + 1.5 + 7000000 + mOffset) % 7
+  }
+
+  @cache('jd:timestamp')
+  get timestamp() {
+    return jdDict2timestamp({ jdn: this.jdn, jdms: this.jdms })
+  }
+
+  toDate() {
+    return new Date(this.timestamp)
   }
 
   add(value: number, unit: GreUnit) {
