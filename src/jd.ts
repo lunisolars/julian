@@ -1,4 +1,4 @@
-import { DateDict, JDConfig, GreUnit } from '../typings/types'
+import { DateDict, JDConfig, GreUnit, JDDict } from '../typings/types'
 import { GRE_UNITS } from './constants'
 import {
   gre2jdn,
@@ -24,22 +24,29 @@ function changeIsUTC(inst: JD, isUTC: boolean) {
 
 export class JD {
   readonly jdn: number
-  readonly jdms: number
-  readonly config: Omit<JDConfig, 'jdms'>
+  readonly jdms: number = 0
+  readonly config: JDConfig
   readonly timezoneOffset: number
   readonly cache = new Map<string, any>()
   constructor(
-    jdnOrDateDict?: number | Date | Partial<DateDict> | string,
+    jdnOrDateDict?: number | Date | Partial<DateDict> | string | JDDict,
     config?: Partial<JDConfig>
   ) {
     let jdn
-    if (typeof jdnOrDateDict !== 'number') {
+    if (typeof jdnOrDateDict === 'object' && typeof (jdnOrDateDict as JDDict).jdn === 'number') {
+      jdn = (jdnOrDateDict as JDDict).jdn
+      if (typeof (jdnOrDateDict as JDDict).jdms === 'number') {
+        this.jdms = (jdnOrDateDict as JDDict).jdms as number
+      }
+    } else if (typeof jdnOrDateDict !== 'number') {
       if (typeof jdnOrDateDict === 'string') jdnOrDateDict = string2DateDict(jdnOrDateDict)
-      jdn = JD.gre2jdn(jdnOrDateDict, config?.isUTC)
-      this.jdms = dateDict2jdms(date2DateDict(jdnOrDateDict), config?.isUTC)
+      jdn = JD.gre2jdn(jdnOrDateDict as Date | Partial<DateDict>, config?.isUTC)
+      this.jdms = dateDict2jdms(
+        date2DateDict(jdnOrDateDict as Date | Partial<DateDict>),
+        config?.isUTC
+      )
     } else {
       jdn = jdnOrDateDict
-      this.jdms = config?.jdms ?? 0
     }
     this.config = setReadonly({
       isUTC: config?.isUTC || false,
