@@ -7,11 +7,12 @@ import {
   modDayMs,
   jdDict2timestamp,
   string2DateDict,
-  date2DateDict,
   prettyUnit,
   toInt,
   setReadonly,
-  cache
+  cache,
+  timestamp2jdDict,
+  date2DateDict
 } from '@lunisolar/utils'
 
 function changeIsUTC(inst: JD, isUTC: boolean) {
@@ -29,24 +30,29 @@ export class JD {
   readonly timezoneOffset: number
   readonly cache = new Map<string, any>()
   constructor(
-    jdnOrDateDict?: number | Date | Partial<DateDict> | string | JDDict,
+    jdd?: number | Date | Partial<DateDict> | string | JDDict | null,
     config?: Partial<JDConfig>
   ) {
-    let jdn
-    if (typeof jdnOrDateDict === 'object' && typeof (jdnOrDateDict as JDDict).jdn === 'number') {
-      jdn = (jdnOrDateDict as JDDict).jdn
-      if (typeof (jdnOrDateDict as JDDict).jdms === 'number') {
-        this.jdms = (jdnOrDateDict as JDDict).jdms as number
+    let jdn: number
+    if (typeof jdd === 'object' && typeof (jdd as JDDict).jdn === 'number') {
+      jdn = (jdd as JDDict).jdn
+      if (typeof (jdd as JDDict).jdms === 'number') {
+        this.jdms = (jdd as JDDict).jdms as number
       }
-    } else if (typeof jdnOrDateDict !== 'number') {
-      if (typeof jdnOrDateDict === 'string') jdnOrDateDict = string2DateDict(jdnOrDateDict)
-      jdn = JD.gre2jdn(jdnOrDateDict as Date | Partial<DateDict>, config?.isUTC)
-      this.jdms = dateDict2jdms(
-        date2DateDict(jdnOrDateDict as Date | Partial<DateDict>),
-        config?.isUTC
-      )
+    } else if (jdd === null || jdd === void 0) {
+      const jdDict = timestamp2jdDict(new Date().valueOf())
+      jdn = jdDict.jdn
+      this.jdms = jdDict.jdms
+    } else if (jdd instanceof Date) {
+      const jdDict = timestamp2jdDict(jdd.valueOf())
+      jdn = jdDict.jdn
+      this.jdms = jdDict.jdms
+    } else if (typeof jdd !== 'number') {
+      if (typeof jdd === 'string') jdd = string2DateDict(jdd)
+      jdn = JD.gre2jdn(jdd as DateDict, config?.isUTC)
+      this.jdms = dateDict2jdms(date2DateDict(jdd as DateDict), config?.isUTC)
     } else {
-      jdn = jdnOrDateDict
+      jdn = jdd
     }
     this.config = setReadonly({
       isUTC: config?.isUTC || false,
@@ -89,6 +95,10 @@ export class JD {
    */
   static fromJdn(jdn: number, config?: Partial<JDConfig>): JD {
     return new JD(jdn, config)
+  }
+
+  static fromTimestamp(timestamp: number, config?: Partial<JDConfig>) {
+    return new JD(timestamp2jdDict(timestamp), config)
   }
 
   /**
