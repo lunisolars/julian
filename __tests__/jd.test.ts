@@ -94,4 +94,9 @@ describe('test JD Class', () => {
     expect(date.getHours()).toBe(0)
     expect(date.getMinutes()).toBe(30)
   })
+
+  it('test JD parse by jdDict', () => {
+    const jd = new JD({ jdn: 2460101.1666666665, jdms: 57600000 })
+    expect(jd.format('YYYY-MM-DD HH:mm:ss')).toBe('2023-06-06 00:00:00')
+  })
 })
