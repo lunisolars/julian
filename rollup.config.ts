@@ -37,7 +37,7 @@ const rollupConfig = [
       }
     ],
     plugins: [
-      del({ targets: ['dist/*', 'locale/*'] }),
+      del({ targets: ['dist/*'] }),
       peerDepsExternal() as Plugin,
       nodeResolve(),
       ts(),
