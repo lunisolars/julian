@@ -15,6 +15,8 @@ import {
   date2DateDict
 } from '@lunisolar/utils'
 
+import { toJDDict } from './utils/func'
+
 function changeIsUTC(inst: JD, isUTC: boolean) {
   const config = Object.assign({}, inst.config, {
     isUTC,
@@ -30,35 +32,37 @@ export class JD {
   readonly timezoneOffset: number
   readonly cache = new Map<string, any>()
   constructor(
-    jdd?: number | Date | Partial<DateDict> | string | JDDict | null,
+    jdd?: number | Date | Partial<DateDict> | string | null | JD | JDDict,
     config?: Partial<JDConfig>
   ) {
-    let jdn: number
-    if (typeof jdd === 'object' && typeof (jdd as JDDict).jdn === 'number') {
-      jdn = (jdd as JDDict).jdn
-      if (typeof (jdd as JDDict).jdms === 'number') {
-        this.jdms = (jdd as JDDict).jdms as number
-      }
+    let jdDict = {
+      jdn: 0,
+      jdms: 0
+    }
+    let defaultConfig: JDConfig = {
+      isUTC: false,
+      offset: 0
+    }
+    if (jdd instanceof JD) {
+      jdDict.jdn = jdd.jdn
+      jdDict.jdms = jdd.jdms
+      defaultConfig = jdd.config
+    } else if (
+      (typeof jdd === 'object' && typeof (jdd as JDDict).jdn === 'number') ||
+      typeof jdd === 'number' ||
+      jdd instanceof Date
+    ) {
+      jdDict = toJDDict(jdd as JDDict | number | Date)
     } else if (jdd === null || jdd === void 0) {
-      const jdDict = timestamp2jdDict(new Date().valueOf())
-      jdn = jdDict.jdn
-      this.jdms = jdDict.jdms
-    } else if (jdd instanceof Date) {
-      const jdDict = timestamp2jdDict(jdd.valueOf())
-      jdn = jdDict.jdn
-      this.jdms = jdDict.jdms
+      jdDict = timestamp2jdDict(new Date().valueOf())
     } else if (typeof jdd !== 'number') {
       if (typeof jdd === 'string') jdd = string2DateDict(jdd)
-      jdn = JD.gre2jdn(jdd as DateDict, config?.isUTC)
-      this.jdms = dateDict2jdms(date2DateDict(jdd as DateDict), config?.isUTC)
-    } else {
-      jdn = jdd
+      jdDict.jdn = JD.gre2jdn(jdd as DateDict, config?.isUTC)
+      jdDict.jdms = dateDict2jdms(date2DateDict(jdd as DateDict), config?.isUTC)
     }
-    this.config = setReadonly({
-      isUTC: config?.isUTC || false,
-      offset: config?.offset || 0
-    })
-    this.jdn = jdn
+    this.config = setReadonly(Object.assign({}, defaultConfig, config))
+    this.jdn = jdDict.jdn
+    this.jdms = modDayMs(jdDict.jdms)
     this.timezoneOffset = this.config.isUTC ? 0 : new Date().getTimezoneOffset()
   }
 
@@ -122,7 +126,7 @@ export class JD {
   }
 
   clone(): JD {
-    return new JD(this.jdn, this.config)
+    return new JD({ jdn: this.jdn, jdms: this.jdms }, this.config)
   }
 
   local(): JD {
@@ -206,7 +210,7 @@ export class JD {
       diff = value / (24 * 60 * 60 * 1000)
       jdms = jdms ? modDayMs(jdms, value) : 0
     }
-    return new JD(jdn + diff, Object.assign({ jdms }, this.config))
+    return new JD({ jdn: jdn + diff, jdms }, this.config)
   }
 
   format(formatStr?: string) {
