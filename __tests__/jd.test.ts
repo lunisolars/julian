@@ -99,4 +99,17 @@ describe('test JD Class', () => {
     const jd = new JD({ jdn: 2460101.1666666665, jdms: 57600000 })
     expect(jd.format('YYYY-MM-DD HH:mm:ss')).toBe('2023-06-06 00:00:00')
   })
+
+  it('test JD parse by lsr', () => {
+    const jd = new JD({ jdn: 2460101.1666666665, jdms: 57600000 })
+    const lsr = { jd, _config: { isUTC: true } }
+    const jd2 = new JD(lsr)
+    expect(jd2.format('YYYY-MM-DD HH:mm:ss')).toBe('2023-06-05 16:00:00')
+  })
+
+  it('test JD parse by JD', () => {
+    const jd = new JD({ jdn: 2460101.1666666665, jdms: 57600000 })
+    const jd2 = new JD(jd).utc()
+    expect(jd2.format('YYYY-MM-DD HH:mm:ss')).toBe('2023-06-05 16:00:00')
+  })
 })
