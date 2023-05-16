@@ -7,5 +7,6 @@ export {
   jdn2timestamp,
   timestamp2jdn,
   jdDict2timestamp,
-  timestamp2jdDict
+  timestamp2jdDict,
+  getFractionalPart
 } from '@lunisolar/utils'
