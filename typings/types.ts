@@ -13,7 +13,7 @@ export type JDConfig = {
   offset: number
 }
 
-export type JDDict = {
+export interface JDDict {
   jdn: number
   jdms?: number
 }
