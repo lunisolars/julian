@@ -8,9 +8,10 @@ export {
   timestamp2jdDict,
   timestamp2jdn,
   jdn2timestamp,
-  jdDict2timestamp
+  jdDict2timestamp,
+  REGEX_PARSE
 } from '@lunisolar/utils'
 
-export { REGEX_PARSE, J2000, GRE_UNITS } from './constants'
+export { J2000, GRE_UNITS } from './constants'
 
 export type { JDConfig, GreUnitFullName, GreUnitShortName, GreUnit } from '../typings/types'
