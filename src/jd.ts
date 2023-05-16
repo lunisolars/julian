@@ -1,4 +1,4 @@
-import { DateDict, JDConfig, GreUnit, JDDict } from '../typings/types'
+import { DateDict, JDConfig, GreUnit, JDDict, DateConfigType } from '../typings/types'
 import { GRE_UNITS } from './constants'
 import {
   gre2jdn,
@@ -25,6 +25,13 @@ function changeIsUTC(inst: JD, isUTC: boolean) {
   return new JD(inst.jdn, config)
 }
 
+function getJDDictFromJD(jd: JD) {
+  return {
+    jdn: jd.jdn,
+    jdms: jd.jdms
+  }
+}
+
 export class JD {
   readonly jdn: number
   readonly jdms: number = 0
@@ -32,7 +39,7 @@ export class JD {
   readonly timezoneOffset: number
   readonly cache = new Map<string, any>()
   constructor(
-    jdd?: number | Date | Partial<DateDict> | string | null | JD | JDDict,
+    jdd?: DateConfigType | JD | { jd: JD; [key: string]: any },
     config?: Partial<JDConfig>
   ) {
     let jdDict = {
@@ -43,18 +50,27 @@ export class JD {
       isUTC: false,
       offset: 0
     }
-    if (jdd instanceof JD) {
-      jdDict.jdn = jdd.jdn
-      jdDict.jdms = jdd.jdms
+    if (jdd === null || jdd === void 0) {
+      jdDict = timestamp2jdDict(new Date().valueOf())
+    } else if (jdd instanceof JD) {
+      jdDict = getJDDictFromJD(jdd)
       defaultConfig = jdd.config
+    } else if (
+      typeof jdd === 'object' &&
+      jdd.hasOwnProperty('jd') &&
+      (jdd as any).jd instanceof JD
+    ) {
+      jdDict = getJDDictFromJD((jdd as any).jd)
+      if (jdd.hasOwnProperty('_config')) {
+        defaultConfig.isUTC = (jdd as any)._config?.isUTC ?? false
+        defaultConfig.offset = (jdd as any)._config?.offset ?? 0
+      }
     } else if (
       (typeof jdd === 'object' && typeof (jdd as JDDict).jdn === 'number') ||
       typeof jdd === 'number' ||
       jdd instanceof Date
     ) {
       jdDict = toJDDict(jdd as JDDict | number | Date)
-    } else if (jdd === null || jdd === void 0) {
-      jdDict = timestamp2jdDict(new Date().valueOf())
     } else if (typeof jdd !== 'number') {
       if (typeof jdd === 'string') jdd = string2DateDict(jdd)
       jdDict.jdn = JD.gre2jdn(jdd as DateDict, config?.isUTC)
