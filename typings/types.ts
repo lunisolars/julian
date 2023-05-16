@@ -31,3 +31,5 @@ export type GreUnitFullName =
 export type GreUnitShortName = 'ms' | 's' | 'm' | 'h' | 'd' | 'w' | 'M' | 'y'
 
 export type GreUnit = GreUnitFullName | GreUnitShortName
+
+export type DateConfigType = number | Date | Partial<DateDict> | string | null | JDDict
