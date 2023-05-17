@@ -143,4 +143,9 @@ describe('test JD Class', () => {
     const jd = new JD('2020-01-01T12:00:00.000Z')
     expect(jd.toDate()).toEqual(new Date('2020-01-01T12:00:00.000Z'))
   })
+
+  it('test JD parse utc2 ', () => {
+    const jd = new JD('2023-03-13 18:23')
+    expect(jd.utc().format('YYYY-MM-DD HH:mm')).toBe('2023-03-13 10:23')
+  })
 })
