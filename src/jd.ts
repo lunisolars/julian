@@ -1,5 +1,5 @@
 import { DateDict, JDConfig, GreUnit, JDDict, DateConfigType } from '../typings/types'
-import { GRE_UNITS } from './constants'
+import { GRE_UNITS, WEEK_DAYS_NAME, MONTHS_NAME } from './constants'
 import {
   gre2jdn,
   jdn2dateDict,
@@ -18,7 +18,7 @@ import {
 import { toJDDict } from './utils/func'
 
 function changeIsUTC(inst: JD, isUTC: boolean) {
-  const config = Object.assign({}, inst.config, {
+  const config = Object.assign({}, inst._config, {
     isUTC,
     offset: 0
   })
@@ -35,7 +35,7 @@ function getJDDictFromJD(jd: JD) {
 export class JD {
   readonly jdn: number
   readonly jdms: number = 0
-  readonly config: JDConfig
+  readonly _config: JDConfig
   readonly timezoneOffset: number
   readonly cache = new Map<string, any>()
   constructor(
@@ -54,7 +54,7 @@ export class JD {
       jdDict = timestamp2jdDict(new Date().valueOf())
     } else if (jdd instanceof JD) {
       jdDict = getJDDictFromJD(jdd)
-      defaultConfig = jdd.config
+      defaultConfig = jdd._config
     } else if (
       typeof jdd === 'object' &&
       jdd.hasOwnProperty('jd') &&
@@ -76,10 +76,10 @@ export class JD {
       jdDict.jdn = JD.gre2jdn(jdd as DateDict, config?.isUTC)
       jdDict.jdms = dateDict2jdms(date2DateDict(jdd as DateDict), config?.isUTC)
     }
-    this.config = setReadonly(Object.assign({}, defaultConfig, config))
+    this._config = setReadonly(Object.assign({}, defaultConfig, config))
     this.jdn = jdDict.jdn
     this.jdms = modDayMs(jdDict.jdms)
-    this.timezoneOffset = this.config.isUTC ? 0 : new Date().getTimezoneOffset()
+    this.timezoneOffset = this._config.isUTC ? 0 : new Date().getTimezoneOffset()
   }
 
   /**
@@ -135,14 +135,14 @@ export class JD {
   @cache('jd:toGre')
   toGre(): Required<DateDict> {
     const jdn = this.jdn
-    const dOffset = this.config.offset / (24 * 60)
-    const jdms = modDayMs(this.jdms, this.config.offset * 60 * 1000)
-    const res = JD.jdn2gre(jdn + dOffset, this.config.isUTC, jdms)
+    const dOffset = this._config.offset / (24 * 60)
+    const jdms = modDayMs(this.jdms, this._config.offset * 60 * 1000)
+    const res = JD.jdn2gre(jdn + dOffset, this._config.isUTC, jdms)
     return res
   }
 
   clone(): JD {
-    return new JD({ jdn: this.jdn, jdms: this.jdms }, this.config)
+    return new JD({ jdn: this.jdn, jdms: this.jdms }, this._config)
   }
 
   local(): JD {
@@ -154,7 +154,7 @@ export class JD {
   }
 
   isUTC() {
-    return this.config.isUTC
+    return this._config.isUTC
   }
 
   get year() {
@@ -186,8 +186,8 @@ export class JD {
   }
 
   get dayOfWeek() {
-    let mOffset = this.config.isUTC ? 0 : -this.timezoneOffset / (24 * 60)
-    mOffset += this.config.offset
+    let mOffset = this._config.isUTC ? 0 : -this.timezoneOffset / (24 * 60)
+    mOffset += this._config.offset
     return toInt(this.jdn + 1.5 + 7000000 + mOffset) % 7
   }
 
@@ -198,6 +198,26 @@ export class JD {
 
   toDate() {
     return new Date(this.timestamp)
+  }
+
+  toISOString(): string {
+    if (this.year > 1900) return this.toDate().toISOString()
+    return this.utc().format('YYYY-MM-DD[T]HH:mm:ss.SSS[Z]')
+  }
+
+  toUTCString(): string {
+    if (this.year > 1900) return this.toDate().toUTCString()
+    return this.utc().format('ddd, DD MMM YYYY HH:mm:ss [GMT]')
+  }
+
+  toString(): string {
+    if (this.year > 1900) return this.toDate().toString()
+    const zs = new Date().toString().split(' ').slice(-1)
+    return this.local().format(`ddd, DD MMM YYYY HH:mm:ss [GMT]ZZ [${zs}]`)
+  }
+
+  valueOf(): number {
+    return this.jdn
   }
 
   add(value: number, unit: GreUnit) {
@@ -215,18 +235,18 @@ export class JD {
       diff = value / (24 * 60 * 60)
       jdms = jdms ? modDayMs(jdms, value * 1000) : 0
     } else if (unit === GRE_UNITS.M || unit === GRE_UNITS.y) {
-      const gre = JD.jdn2gre(this.jdn, this.config.isUTC)
+      const gre = JD.jdn2gre(this.jdn, this._config.isUTC)
       diff = 0
       if (unit === GRE_UNITS.M) gre.month += 1
       if (unit === GRE_UNITS.y) gre.year += 1
-      jdn = JD.gre2jdn(gre, this.config.isUTC)
+      jdn = JD.gre2jdn(gre, this._config.isUTC)
     } else if (unit === GRE_UNITS.w) {
       diff = value / 7
     } else if (unit === GRE_UNITS.ms) {
       diff = value / (24 * 60 * 60 * 1000)
       jdms = jdms ? modDayMs(jdms, value) : 0
     }
-    return new JD({ jdn: jdn + diff, jdms }, this.config)
+    return new JD({ jdn: jdn + diff, jdms }, this._config)
   }
 
   format(formatStr?: string) {
@@ -262,9 +282,14 @@ export class JD {
       YYYY: String(y),
       M: String(M),
       MM: String(M).padStart(2, '0'),
+      MMM: MONTHS_NAME[M - 1].slice(0, 3),
+      MMMM: MONTHS_NAME[M - 1],
       D: String(D),
       DD: String(D).padStart(2, '0'),
       d: String(w),
+      dd: WEEK_DAYS_NAME[w].slice(0, 2),
+      ddd: WEEK_DAYS_NAME[w].slice(0, 3),
+      dddd: WEEK_DAYS_NAME[w],
       H: String(H),
       HH: String(H).padStart(2, '0'),
       h: String(h),
@@ -281,7 +306,6 @@ export class JD {
       Z: tz,
       ZZ: tz.replace(':', '')
     }
-
     return str.replace(REGEX_FORMAT, (match, $1) => {
       return $1 || matches[match as keyof typeof matches]
     })
