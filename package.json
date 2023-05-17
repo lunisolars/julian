@@ -1,6 +1,6 @@
 {
   "name": "@lunisolar/julian",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "This is a tool for converting Julian Day Number and Gregorian calendar. 儒略日数和公历之间的转换工具",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -53,6 +53,6 @@
     "typescript": "^4.9.5"
   },
   "dependencies": {
-    "@lunisolar/utils": "^0.5.5"
+    "@lunisolar/utils": "^0.5.6"
   }
 }
