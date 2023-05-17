@@ -138,4 +138,9 @@ describe('test JD Class', () => {
       'Sat, 17 May 1800 16:00:00 GMT+0800 (中国标准时间)'
     )
   })
+
+  it('test JD utc string', () => {
+    const jd = new JD('2020-01-01T12:00:00.000Z')
+    expect(jd.toDate()).toEqual(new Date('2020-01-01T12:00:00.000Z'))
+  })
 })

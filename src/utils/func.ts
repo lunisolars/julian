@@ -22,3 +22,7 @@ export function toJDDict(jdd: JDDict | Date | number): Required<JDDict> {
     jdms: jdd?.jdms ?? computeJdmsFromJdn(jdd.jdn)
   }
 }
+
+export function getIsUTCFromString(str: string) {
+  return /Z$/i.test(str)
+}

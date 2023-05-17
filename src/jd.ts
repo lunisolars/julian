@@ -15,7 +15,7 @@ import {
   date2DateDict
 } from '@lunisolar/utils'
 
-import { toJDDict } from './utils/func'
+import { toJDDict, getIsUTCFromString } from './utils/func'
 
 function changeIsUTC(inst: JD, isUTC: boolean) {
   const config = Object.assign({}, inst._config, {
@@ -50,6 +50,7 @@ export class JD {
       isUTC: false,
       offset: 0
     }
+    let strIsUTC = false
     if (jdd === null || jdd === void 0) {
       jdDict = timestamp2jdDict(new Date().valueOf())
     } else if (jdd instanceof JD) {
@@ -72,7 +73,10 @@ export class JD {
     ) {
       jdDict = toJDDict(jdd as JDDict | number | Date)
     } else if (typeof jdd !== 'number') {
-      if (typeof jdd === 'string') jdd = string2DateDict(jdd)
+      if (typeof jdd === 'string') {
+        strIsUTC = getIsUTCFromString(jdd)
+        jdd = string2DateDict(jdd)
+      }
       jdDict.jdn = JD.gre2jdn(jdd as DateDict, config?.isUTC)
       jdDict.jdms = dateDict2jdms(date2DateDict(jdd as DateDict), config?.isUTC)
     }
@@ -80,6 +84,10 @@ export class JD {
     this.jdn = jdDict.jdn
     this.jdms = modDayMs(jdDict.jdms)
     this.timezoneOffset = this._config.isUTC ? 0 : new Date().getTimezoneOffset()
+    if (strIsUTC && !this._config.isUTC) {
+      this.jdn -= this.timezoneOffset / (24 * 60)
+      this.jdms = modDayMs(this.jdms, -this.timezoneOffset * 60 * 1000)
+    }
   }
 
   /**
@@ -193,7 +201,7 @@ export class JD {
 
   @cache('jd:timestamp')
   get timestamp() {
-    return jdDict2timestamp({ jdn: this.jdn, jdms: this.jdms })
+    return Math.round(jdDict2timestamp({ jdn: this.jdn, jdms: this.jdms }))
   }
 
   toDate() {
