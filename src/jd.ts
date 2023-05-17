@@ -237,8 +237,8 @@ export class JD {
     } else if (unit === GRE_UNITS.M || unit === GRE_UNITS.y) {
       const gre = JD.jdn2gre(this.jdn, this._config.isUTC)
       diff = 0
-      if (unit === GRE_UNITS.M) gre.month += 1
-      if (unit === GRE_UNITS.y) gre.year += 1
+      if (unit === GRE_UNITS.M) gre.month += value
+      if (unit === GRE_UNITS.y) gre.year += value
       jdn = JD.gre2jdn(gre, this._config.isUTC)
     } else if (unit === GRE_UNITS.w) {
       diff = value / 7
