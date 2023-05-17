@@ -112,4 +112,24 @@ describe('test JD Class', () => {
     const jd2 = new JD(jd).utc()
     expect(jd2.format('YYYY-MM-DD HH:mm:ss')).toBe('2023-06-05 16:00:00')
   })
+
+  it('test JD toISOString', () => {
+    const jd = new JD({ jdn: 2460101.1666666665, jdms: 57600000 })
+    expect(jd.toISOString()).toBe('2023-06-05T16:00:00.000Z')
+    expect(JD.fromGre('1800-02-02 12:00:00').toISOString()).toBe('1800-02-02T04:00:00.000Z')
+  })
+
+  it('test JD toUTCString', () => {
+    const jd = new JD({ jdn: 2460101.1666666665, jdms: 57600000 })
+    expect(jd.toUTCString()).toBe('Mon, 05 Jun 2023 16:00:00 GMT')
+    expect(JD.fromGre('1800-05-17 16:00:00').toUTCString()).toBe('Sat, 17 May 1800 08:00:00 GMT')
+  })
+
+  it('test JD toString', () => {
+    const jd = new JD({ jdn: 2460101.1666666665, jdms: 57600000 })
+    expect(jd.toString()).toBe('Tue Jun 06 2023 00:00:00 GMT+0800 (中国标准时间)')
+    expect(JD.fromGre('1800-05-17 16:00:00').toString()).toBe(
+      'Sat, 17 May 1800 16:00:00 GMT+0800 (中国标准时间)'
+    )
+  })
 })
