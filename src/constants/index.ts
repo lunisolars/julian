@@ -18,3 +18,27 @@ export const GRE_UNITS = {
   M: 'month',
   y: 'year'
 }
+
+export const WEEK_DAYS_NAME = [
+  'Sunday',
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday'
+]
+export const MONTHS_NAME = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December'
+]
