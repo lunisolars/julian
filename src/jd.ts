@@ -275,7 +275,8 @@ export class JD {
       ).padStart(2, '0')}`
     }
 
-    const y = this.year
+    const isBC = this.year < 0
+    const y = Math.abs(this.year)
     const M = this.month
     const D = this.day
     const H = this.hour
@@ -284,10 +285,12 @@ export class JD {
     const w = this.dayOfWeek
     const h = H % 12 || 12
     const tz = padZoneStr(this.timezoneOffset)
+    const yearString = String(y).length < 4 ? String(y).padStart(4, '0') : String(y)
     const matches = {
       J: String(this.jdn),
-      YY: String(y).slice(-2),
-      YYYY: String(y),
+      Y: String(this.year),
+      YY: (isBC ? '-' : '') + (isBC && String(y).length > 2 ? String(y) : yearString.slice(-2)),
+      YYYY: (isBC ? '-' : '') + yearString,
       M: String(M),
       MM: String(M).padStart(2, '0'),
       MMM: MONTHS_NAME[M - 1].slice(0, 3),

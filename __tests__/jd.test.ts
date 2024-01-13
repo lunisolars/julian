@@ -148,4 +148,18 @@ describe('test JD Class', () => {
     const jd = new JD('2023-03-13 18:23')
     expect(jd.utc().format('YYYY-MM-DD HH:mm')).toBe('2023-03-13 10:23')
   })
+
+  it('test JD parse offset ', () => {
+    expect(new JD('2023/04/09', { offset: 60 }).timestamp).toBe(1680969600000)
+  })
+
+  it('test JD parse BC ', () => {
+    expect(new JD('BC200/04/09').format('YYYY-MM-DD')).toBe('-0199-04-09')
+    expect(new JD('0/04/09').format('YYYY-MM-DD')).toBe('0000-04-09')
+    expect(new JD('-1/04/09').format('YYYY-MM-DD')).toBe('-0001-04-09')
+    expect(new JD('1/04/09').format('YYYY-MM-DD')).toBe('0001-04-09')
+    expect(new JD('100/1/1').format('YYYY-MM-DD')).toBe('0100-01-01')
+    expect(new JD('BC100/1/1').format('YYYY-MM-DD')).toBe('-0099-01-01')
+    expect(new JD('BC100/1/1').format('Y-M-D')).toBe('-99-1-1')
+  })
 })
